@@ -44,15 +44,17 @@ heroes = {
     # Add more heroes and facts here
 }
 
-bot = commands.Bot(command_prefix=".")
+discord.Intents.default()
+bot = commands.Bot(intents=discord.Intents.default(), command_prefix=".")
+
 
 # Use a class to store the game state
 class TriviaGame:
     def __init__(self):
-        self.heroes = list(heroes.keys("d.va", "doomfist", "junker queen", "orisa", "ramattra", "reinhardt", "roadhog", "sigma", "winston", "wrecking ball", "zarya", "ashe", "bastion", "cassidy", "echo", "genji", "hanzo", "junkrat", "mei", "pharah", "reaper", "soldier 76", "sojourn", "sombra", "symmetra", "torbjörn", "tracer", "widowmaker", "ana", "baptiste", "brigitte", "kiriko", "lifeweaver", "lucio", "mercy", "moira", "zenyatta")) # Make a copy of the hero names
-        random.shuffle(self.heroes) # Shuffle the order
-        self.x = 0 # The current index of the hero
-        self.lives = 3 # The number of lives left
+        self.heroes = list(heroes.keys())  # Make a copy of the hero names
+        random.shuffle(self.heroes)  # Shuffle the order
+        self.x = 0  # The current index of the hero
+        self.lives = 3  # The number of lives left
 
     def get_current_hero(self):
         # Return the name of the current hero
@@ -65,61 +67,64 @@ class TriviaGame:
     def check_answer(self, guess):
         # Check if the guess is correct and update the game state accordingly
         if guess.lower() == self.get_current_hero():
-            return True # Correct answer
+            return True  # Correct answer
         else:
-            self.lives -= 1 # Wrong answer, lose a life
+            self.lives -= 1  # Wrong answer, lose a life
             return False
 
     def next_question(self):
         # Move on to the next question if possible
         if self.x < len(self.heroes) - 1 and self.lives > 0:
-            self.x += 1 # Increment the index
-            return True # There is a next question
+            self.x += 1  # Increment the index
+            return True  # There is a next question
         else:
-            return False # No more questions or lives left
+            return False  # No more questions or lives left
+
 
 # Use a global variable to store the current game instance
 game = None
 
+
 @bot.command()
 async def play(ctx):
-    global game # Access the global variable
-    game = TriviaGame() # Create a new game instance
+    global game  # Access the global variable
+    game = TriviaGame()  # Create a new game instance
     await ctx.send("Let's play Overwatch trivia! You have 3 lives. Guess the hero based on the fact.")
-    await next(ctx) # Start the first question
+    await next(ctx)  # Start the first question
+
 
 @bot.command()
 async def answer(ctx, guess):
-    global game # Access the global variable
-    if game is None: # Check if there is an active game
+    global game  # Access the global variable
+    if game is None:  # Check if there is an active game
         await ctx.send("There is no game in progress. Please use .play to start a new game.")
     else:
-        if game.check_answer(guess): # Check the answer and get feedback
+        if game.check_answer(guess):  # Check the answer and get feedback
             await ctx.send("Correct! You are a true Overwatch fan!")
-            if game.next_question(): # Move on to the next question if possible
+            if game.next_question():  # Move on to the next question if possible
                 await next(ctx)
-            else: # No more questions left, end the game
+            else:  # No more questions left, end the game
                 await ctx.send("Congratulations! You have answered all questions correctly! You are a true gamer!")
-                game = None # Reset the game variable
+                game = None  # Reset the game variable
         else:
             await ctx.send("Wrong! You lose a life!")
-            if game.lives == 0: # Check if there are any lives left
+            if game.lives == 0:  # Check if there are any lives left
                 await ctx.send(f"Game over! You ran out of lives!")
                 await ctx.send(f"The correct answer was {game.get_current_hero()}.")
                 await ctx.send(f"Maybe you\'ll get it next time ♥")
-                game = None # Reset the game variable
+                game = None  # Reset the game variable
             else:
-                await next(ctx) # Continue with the same question
+                await next(ctx)  # Continue with the same question
+
 
 @bot.command()
 async def next(ctx):
-    global game # Access the global variable
-    if game is None: # Check if there is an active game
+    global game  # Access the global variable
+    if game is None:  # Check if there is an active game
         await ctx.send("There is no game in progress. Please use .play to start a new game.")
     else:
         await ctx.send('---------------------------')
         await ctx.send(f'lives: {game.lives}')
-        await ctx.send(game.get_current_fact()) # Send the fact of the current hero
+        await ctx.send(game.get_current_fact())  # Send the fact of the current hero
 
 # Use error handlers to handle invalid commands or arguments
-@
