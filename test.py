@@ -26,7 +26,7 @@ x = 0
 while lives > 0 and x < len(heroes.heroes):
     print('--------------------------')
     print('Lives: ', lives)
-    print('\nWho is this hero?\n', heroes[x])
+    print('\nWho is this hero?\n', heroes.heroes.get(x))
     guess = input()
 
     if guess == heroes.heroes.get(x):
