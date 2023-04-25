@@ -1,6 +1,6 @@
 # Dictionary of the heroes and their facts
 
-heroes = {
+hero_facts = {
     "d.va": "She is a former professional gamer who joined the MEKA unit to defend her homeland from the omnic threat.",
     "doomfist": "He is a ruthless leader of Talon who believes that conflict is the only way to strengthen humanity.",
     "junker queen": "She is the leader of Junkertown and a former mech fighter who rose to power after the Omnic "
@@ -74,3 +74,5 @@ heroes = {
     "zenyatta": "He is an omnic monk and a mentor of Genji who seeks to heal the rift between humans and omnics. He "
                 "uses his orbs of harmony and discord to heal or weaken his allies, as well as transcendence."
 }
+
+hero_list = ["d.va", "doomfist", "junker queen", "orisa", "ramattra", "reinhardt", "roadhog", "sigma", "winston", "wrecking ball", "zarya", "ashe", "bastion", "cassidy", "echo", "genji", "hanzo", "junkrat", "mei", "pharah", "reaper", "soldier 76", "sojourn", "sombra", "symmetra", "torbjörn", "tracer", "widowmaker", "ana", "baptiste", "brigitte", "kiriko", "lifeweaver", "lucio", "mercy", "moira", "zenyatta"]
