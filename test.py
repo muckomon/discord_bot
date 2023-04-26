@@ -1,48 +1,151 @@
+# Import modules
+import discord
+from discord.ext import commands
 import random
-import heroes
+import questions
 
-# intro to the game
-print('Hello and welcome to Guess that Hero!\nDo you want to play y/n: ')
-play = input().lower()
 
-if play == 'y':
-    print('Lets gooooo!')
-elif play == 'n':
-    print('Sorry to hear that </3 maybe next time..')
-    input('Press a key to exit')
-    exit()
-else:
-    print('You had 1 job and you fucked it up. Good job....')
-    input('Press a key to exit')
-    exit()
+# Create bot instance
+intents = discord.Intents.default()
+intents.message_content = True
+bot = commands.Bot(command_prefix='.', intents=intents)
 
-# lives of the player
-lives = 3
-# index of the character
-x = 0
 
-random.shuffle(heroes.hero_list)
+# Define emojis for reactions
+emojis = ["🇦", "🇧", "🇨", "🇩"]
 
-# start game
-while lives > 0 and x < len(heroes.hero_list):
-    print('--------------------------')
-    print('Lives: ', lives)
-    print('\nWho is this hero?')
-    print(heroes.hero_facts.get(heroes.hero_list[x]))
-    guess = input()
 
-    if guess == heroes.hero_list[x]:
-        print('That is correct!')
-        x += 1
+# Define a command to start a trivia game
+@bot.command()
+async def trivia(ctx):
+    # Define trivia questions and answers
+    questions_copy = questions.trivia_data.copy()
+    # Get a random question and answer from the trivia data
+    trivia_item = random.choice(questions_copy)
+    question = trivia_item["question"]
+    answers = trivia_item["answers"]
+    correct = trivia_item["correct"]
+
+    # Create an embed message with the question and answers
+    embed = discord.Embed(title="Trivia Time!", description=question, color=discord.Color.blue())
+    for i, answer in enumerate(answers):
+        embed.add_field(name=emojis[i], value=answer, inline=False)
+
+    # Send the embed message and add reactions
+    message = await ctx.send(embed=embed)
+    for emoji in emojis:
+        await message.add_reaction(emoji)
+
+    # Wait for a user's reaction
+    def check(reaction, user):
+        # Check if the reaction is valid and from the same user and channel as the command
+        return reaction.message.id == message.id and user == ctx.author and str(reaction.emoji) in emojis
+
+    try:
+        # Wait for 10 seconds or until a valid reaction is added
+        reaction, user = await bot.wait_for("reaction_add", timeout=20.0, check=check)
+    except:
+        # If no reaction is added, send a timeout message and end the game
+        await ctx.send("Sorry, you ran out of time!")
+        return
+
+    # Check if the user's reaction matches the correct answer
+    if emojis.index(str(reaction.emoji)) == correct:
+        # If yes, send a congratulation message and update the user's score
+        await ctx.send(f"Correct! Well done, {user.name}!")
+        # TODO: Add code to update the user's score and rank here
     else:
-        print('That isn\'t right! Try again')
-        lives -= 1
+        # If no, send a sorry message and show the correct answer
+        await ctx.send(f"That isn\'t correct, {user.name} </3")
 
-# game ending
-if lives > 0:
-    print('--------------------------')
-    print('Congrats, you made it to the end! You are a true gamer ♥')
-    print('You only answered ', 3 - lives, ' questions wrong! Well done')
-else:
-    print('--------------------------')
-    print('You almost made it. Read up on your overwatch lore and try again.\nMaybe you will get it next time ♥')
+@bot.command()
+async def trivia5(ctx):
+    questions_copy = questions.trivia_data.copy()
+    x = 0
+    while x < 5:
+        # Get a random question and answer from the trivia data
+        trivia_item = random.choice(questions_copy)
+        question = trivia_item["question"]
+        answers = trivia_item["answers"]
+        correct = trivia_item["correct"]
+        questions_copy.remove(trivia_item)
+
+        # Create an embed message with the question and answers
+        embed = discord.Embed(title="Trivia Time!", description=question, color=discord.Color.blue())
+        for i, answer in enumerate(answers):
+            embed.add_field(name=emojis[i], value=answer, inline=False)
+
+        # Send the embed message and add reactions
+        message = await ctx.send(embed=embed)
+        for emoji in emojis:
+            await message.add_reaction(emoji)
+
+        # Wait for a user's reaction
+        def check(reaction, user):
+            # Check if the reaction is valid and from the same user and channel as the command
+            return reaction.message.id == message.id and user == ctx.author and str(reaction.emoji) in emojis
+
+        try:
+            # Wait for 10 seconds or until a valid reaction is added
+            reaction, user = await bot.wait_for("reaction_add", timeout=20.0, check=check)
+        except:
+            # If no reaction is added, send a timeout message and end the game
+            await ctx.send("Sorry, you ran out of time!")
+            return
+
+        # Check if the user's reaction matches the correct answer
+        if emojis.index(str(reaction.emoji)) == correct:
+            # If yes, send a congratulation message and update the user's score
+            await ctx.send(f"Correct! Well done, {user.name}!")
+            # TODO: Add code to update the user's score and rank here
+        else:
+            # If no, send a sorry message and show the correct answer
+            await ctx.send(f"That isn\'t correct, {user.name} </3")
+        x += 1
+
+@bot.command()
+async def trivia10(ctx):
+    questions_copy = questions.trivia_data.copy()
+    x = 0
+    while x < 10:
+        # Get a random question and answer from the trivia data
+        trivia_item = random.choice(questions_copy)
+        question = trivia_item["question"]
+        answers = trivia_item["answers"]
+        correct = trivia_item["correct"]
+        questions_copy.remove(trivia_item)
+
+        # Create an embed message with the question and answers
+        embed = discord.Embed(title="Trivia Time!", description=question, color=discord.Color.blue())
+        for i, answer in enumerate(answers):
+            embed.add_field(name=emojis[i], value=answer, inline=False)
+
+        # Send the embed message and add reactions
+        message = await ctx.send(embed=embed)
+        for emoji in emojis:
+            await message.add_reaction(emoji)
+
+        # Wait for a user's reaction
+        def check(reaction, user):
+            # Check if the reaction is valid and from the same user and channel as the command
+            return reaction.message.id == message.id and user == ctx.author and str(reaction.emoji) in emojis
+
+        try:
+            # Wait for 10 seconds or until a valid reaction is added
+            reaction, user = await bot.wait_for("reaction_add", timeout=20.0, check=check)
+        except:
+            # If no reaction is added, send a timeout message and end the game
+            await ctx.send("Sorry, you ran out of time!")
+            return
+
+        # Check if the user's reaction matches the correct answer
+        if emojis.index(str(reaction.emoji)) == correct:
+            # If yes, send a congratulation message and update the user's score
+            await ctx.send(f"Correct! Well done, {user.name}!")
+            # TODO: Add code to update the user's score and rank here
+        else:
+            # If no, send a sorry message and show the correct answer
+            await ctx.send(f"That isn\'t correct, {user.name} </3")
+        x += 1
+
+bot.run('TOKEN')
