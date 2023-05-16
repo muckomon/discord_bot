@@ -2,7 +2,7 @@ import random
 import discord
 from discord.ext import commands
 from discord.commands import Option
-from discord.ui import Button, Select, View
+from discord.ui import Button, View
 import questions
 import responses
 
