@@ -1,23 +1,32 @@
 import random
 import discord
 from discord.ext import commands
-from discord.commands import Option
+from discord import app_commands
 from discord.ui import Button, View
 import questions
 import responses
 
+# Intents for the bot
 intents = discord.Intents.default()
-bot = commands.Bot(command_prefix='.', intents=discord.Intents.default())
+bot = commands.Bot(command_prefix='.', intents=intents)
 
+# Variable with the guild id and token for the bot
 guild_id = responses.guild_id
 TOKEN = responses.TOKEN
 
 
-async def on_connect(self):
-    if self.auto_sync_commands:
-        await self.sync_commands()
+# Sync the commands
+@bot.event
+async def on_ready():
+    print('Bot is up and ready!')
+    try:
+        synced = await bot.tree.sync()
+        print(f'Synced {len(synced)} command(s)')
+    except Exception as e:
+        print(e)
 
 
+# Class for trivia view
 class TriviaView(View):
     def __init__(self, question, correct_answer):
         super().__init__()
@@ -26,50 +35,54 @@ class TriviaView(View):
         self.response = None
 
     @discord.ui.button(label='A', style=discord.ButtonStyle.primary)
-    async def answer_a(self, button: Button, interaction: discord.Interaction):
+    async def answer_a(self, interaction: discord.Interaction, button: Button):
         self.response = 'A'
         await interaction.response.defer()
         self.stop()
 
-    @discord.ui.button(label="B", style=discord.ButtonStyle.primary)
-    async def answer_b(self, button: Button, interaction: discord.Interaction):
-        self.response = "B"
+    @discord.ui.button(label='B', style=discord.ButtonStyle.primary)
+    async def answer_b(self, interaction: discord.Interaction, button: Button):
+        self.response = 'B'
         await interaction.response.defer()
         self.stop()
 
-    @discord.ui.button(label="C", style=discord.ButtonStyle.primary)
-    async def answer_c(self, button: Button, interaction: discord.Interaction):
-        self.response = "C"
+    @discord.ui.button(label='C', style=discord.ButtonStyle.primary)
+    async def answer_c(self, interaction: discord.Interaction, button: Button):
+        self.response = 'C'
         await interaction.response.defer()
         self.stop()
 
-    @discord.ui.button(label="D", style=discord.ButtonStyle.primary)
-    async def answer_d(self, button: Button, interaction: discord.Interaction):
-        self.response = "D"
+    @discord.ui.button(label='D', style=discord.ButtonStyle.primary)
+    async def answer_d(self, interaction: discord.Interaction, button: Button):
+        self.response = 'D'
         await interaction.response.defer()
         self.stop()
 
 
-@bot.slash_command(guild_ids=guild_id, name='trivia', description='Start a trivia game',
-                   options=[Option(name='category', description='Choose a category', type=3, required=True,
-                                   choices=[{'name': 'facts', 'value': 'facts'},
-                                            {'name': 'silhouettes', 'value': 'silhouettes'},
-                                            {'name': 'maps', 'value': 'maps'}]),
-                            Option(name='difficulty', description='Choose a difficulty level', type=3,
-                                   required=True,
-                                   choices=[{'name': 'Easy', 'value': 'easy'},
-                                            {'name': 'Hard', 'value': 'hard'}]),
-                            Option(name='rounds', description='Choose how many rounds to play', type=4,
-                                   required=True)])
-async def trivia(ctx, category, difficulty, rounds):
-    category = ctx.get_option('category')
-    difficulty = ctx.get_option('difficulty')
-    rounds = ctx.get_option('rounds')
+# Slash command for to start the trivia game
+@bot.tree.command(name='trivia')
+@app_commands.choices(category=[
+    app_commands.Choice(name='facts', value=1),
+    app_commands.Choice(name='silhouettes', value=2),
+    app_commands.Choice(name='maps', value=3)
+])
+@app_commands.choices(difficulty=[
+    app_commands.Choice(name='easy', value=1),
+    app_commands.Choice(name='hard', value=2)
+])
+@app_commands.describe(rounds='How many rounds do you wanna play? Between 1 and 10')
+async def trivia(interaction: discord.Interaction, category: app_commands.Choice[int],
+                 difficulty: app_commands.Choice[int], rounds: int):
+    category = category.name
+    difficulty = difficulty.name
+    rounds = rounds
+
     if rounds < 1 or rounds > 10:
-        await ctx.send('Invalid number of rounds. Please choose between 1 and 10.')
+        await interaction.response.send_message('Invalid number of rounds. Please choose between 1 and 10!')
         return
     score = 0
-    await ctx.send(f'Starting a trivia game with {rounds} rounds in {category} category and {difficulty} difficulty.')
+    await interaction.response.send_message(
+        f'You want to play {rounds} rounds of {category} on {difficulty} difficulty')
     for i in range(rounds):
         # Getting question data using an if statement and making it a copy to not remove data from the file
         questions_copy = None
@@ -84,7 +97,7 @@ async def trivia(ctx, category, difficulty, rounds):
         random_question = random.choice(questions_copy)
 
         # Get the question
-        question = random_question[difficulty.name]
+        question = random_question[difficulty]
 
         # Get the alternatives
         answers = random_question['answers']
@@ -108,25 +121,25 @@ async def trivia(ctx, category, difficulty, rounds):
         # Make the answer text for the question
         answer_text = '\n'.join([f"{letter}) {answer}" for letter, answer in zip(["A", "B", "C", "D"], answers)])
 
-        # Remove the question for the question data copy to not repeat the same question
+        # Remove the question from the question data copy to not repeat the same question
         questions_copy.remove(random_question)
 
         # Make the embed for the question
         embed = discord.Embed(title=f'Round {i + 1}', description=question)
         embed.add_field(name='Answers', value=answer_text)
         view = TriviaView(question, correct_letter)
-        await ctx.send(embed=embed, view=view)
+        await interaction.followup.send(embed=embed, view=view)
         await view.wait()
 
         # Check if the user answered correctly
         if view.response == correct_letter:
-            await ctx.send('Correct!')
+            await interaction.followup.send('Correct!')
             score += 1
         else:
-            await ctx.send(f'Wrong! The correct answer was {correct_letter}) {correct_answer}.')
+            await interaction.followup.send(f'Wrong! The correct answer was {correct_letter}) {correct_answer}.')
 
     # Send goodbye message
-    await ctx.send(f'Game over! Your final score is {score}/{rounds}.')
+    await interaction.followup.send(f'Game over! Your final score is {score}/{rounds}')
 
 
 # Run the bot with discord token
