@@ -78,17 +78,20 @@ async def trivia(interaction: discord.Interaction, category: app_commands.Choice
     difficulty = difficulty.name
     rounds = rounds
 
-    if rounds < 1 or rounds > 36:
+    if rounds < 1 or rounds > 10:
         await interaction.response.send_message('Invalid number of rounds. Please choose between 1 and 10!')
         return
     score = 0
     await interaction.response.send_message(
         f'You want to play {rounds} rounds of {category} on {difficulty} difficulty')
-    for i in range(rounds):
-        # Getting question data using an if statement and making it a copy to not remove data from the file
-        questions_copy = None
-        if category == 'facts':
-            questions_copy = questions.facts.copy()
+
+    # Getting question data using an if statement and making it a copy to not remove data from the file
+    questions_copy = None
+    if category == 'facts':
+        questions_copy = questions.facts.copy()
+
+        for i in range(rounds):
+
             # Get a random question
             random_question = random.choice(questions_copy)
 
@@ -134,8 +137,11 @@ async def trivia(interaction: discord.Interaction, category: app_commands.Choice
             else:
                 await interaction.followup.send(random.choice(responses.negative))
 
-        elif category == 'silhouettes':
-            questions_copy = questions.silhouettes.copy()
+    elif category == 'silhouettes':
+        questions_copy = questions.silhouettes.copy()
+
+        for i in range(rounds):
+
             # Get a random question
             random_question = random.choice(questions_copy)
 
@@ -182,8 +188,11 @@ async def trivia(interaction: discord.Interaction, category: app_commands.Choice
             else:
                 await interaction.followup.send(random.choice(responses.negative))
 
-        elif category == 'maps':
-            questions_copy = questions.maps.copy()
+    elif category == 'maps':
+        questions_copy = questions.maps.copy()
+
+        for i in range(rounds):
+
             # Get a random question
             random_question = random.choice(questions_copy)
 
